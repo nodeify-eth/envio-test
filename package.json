@@ -4,10 +4,10 @@
   "packageManager": "pnpm@10.29.3",
   "type": "module",
   "scripts": {
-    "codegen": "envio codegen",
+    "codegen": "ENVIO_ARBITRUM_ONE_HYPERRPC_URL=https://42161.rpc.hypersync.xyz/build-token ENVIO_ARBITRUM_ONE_LIVE_HEAD_RPC_URL=http://localhost:8545 ENVIO_ARBITRUM_ONE_LIVE_HEAD_WS_URL=ws://localhost:8546 envio codegen",
     "dev": "envio dev",
     "start": "envio start",
-    "test": "vitest run --test-timeout=10000",
+    "test": "ENVIO_ARBITRUM_ONE_HYPERRPC_URL=https://42161.rpc.hypersync.xyz/build-token ENVIO_ARBITRUM_ONE_LIVE_HEAD_RPC_URL=http://localhost:8545 ENVIO_ARBITRUM_ONE_LIVE_HEAD_WS_URL=ws://localhost:8546 vitest run --test-timeout=10000",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
