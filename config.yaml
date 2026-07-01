@@ -335,7 +335,7 @@ chains:
     start_block: 42440000
     rpc:
       - url: ${ENVIO_ARBITRUM_ONE_HYPERRPC_URL}
-        for: fallback
+        for: sync
       - url: ${ENVIO_ARBITRUM_ONE_LIVE_HEAD_RPC_URL}
         for: realtime
         ws: ${ENVIO_ARBITRUM_ONE_LIVE_HEAD_WS_URL}
