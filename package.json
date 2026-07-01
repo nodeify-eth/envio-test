@@ -1,6 +1,7 @@
 {
   "name": "graph-network-arbitrum-hyperindex",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.29.3",
   "type": "module",
   "scripts": {
     "codegen": "envio codegen",
