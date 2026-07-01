@@ -1,0 +1,390 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: graph-network-arbitrum
+description: HyperIndex migration of graphprotocol/graph-network-subgraph for Arbitrum One
+schema: ./schema.graphql
+field_selection:
+  transaction_fields:
+    - hash
+contracts:
+  - name: Controller
+    abi_file_path: ./abis/Controller.json
+    events:
+      - event: SetContractProxy(bytes32 indexed id, address contractAddress)
+      - event: NewOwnership(address indexed from, address indexed to)
+      - event: PartialPauseChanged(bool isPaused)
+      - event: PauseChanged(bool isPaused)
+      - event: NewPauseGuardian(address indexed oldPauseGuardian, address indexed
+          pauseGuardian)
+  - name: GNSBundle
+    abi_file_path: ./abis/GNSBundle.json
+    events:
+      - event: SubgraphPublished(address indexed graphAccount, uint256 indexed
+          subgraphNumber, bytes32 indexed subgraphDeploymentID, bytes32
+          versionMetadata)
+        name: SubgraphPublished_1
+      - event: SubgraphDeprecated(address indexed graphAccount, uint256 indexed
+          subgraphNumber)
+        name: SubgraphDeprecated_1
+      - event: SetDefaultName(address indexed graphAccount, uint256 nameSystem, bytes32
+          nameIdentifier, string name)
+      - event: SubgraphMetadataUpdated(address indexed graphAccount, uint256 indexed
+          subgraphNumber, bytes32 subgraphMetadata)
+        name: SubgraphMetadataUpdated_1
+      - event: NameSignalEnabled(address indexed graphAccount, uint256 indexed
+          subgraphNumber, bytes32 indexed subgraphDeploymentID, uint32
+          reserveRatio)
+      - event: NameSignalUpgrade(address indexed graphAccount, uint256 indexed
+          subgraphNumber, uint256 newVSignalCreated, uint256 tokensSignalled,
+          bytes32 indexed subgraphDeploymentID)
+      - event: NSignalMinted(address indexed graphAccount, uint256 indexed
+          subgraphNumber, address indexed nameCurator, uint256 nSignalCreated,
+          uint256 vSignalCreated, uint256 tokensDeposited)
+      - event: NSignalBurned(address indexed graphAccount, uint256 indexed
+          subgraphNumber, address indexed nameCurator, uint256 nSignalBurnt,
+          uint256 vSignalBurnt, uint256 tokensReceived)
+      - event: NameSignalDisabled(address indexed graphAccount, uint256 indexed
+          subgraphNumber, uint256 withdrawableGRT)
+      - event: GRTWithdrawn(address indexed graphAccount, uint256 indexed
+          subgraphNumber, address indexed nameCurator, uint256 nSignalBurnt,
+          uint256 withdrawnGRT)
+        name: GRTWithdrawn_1
+      - event: ParameterUpdated(string param)
+      - event: SubgraphPublished(uint256 indexed subgraphID, bytes32 indexed
+          subgraphDeploymentID, uint32 reserveRatio)
+        name: SubgraphPublished_2
+      - event: SubgraphDeprecated(uint256 indexed subgraphID, uint256 withdrawableGRT)
+        name: SubgraphDeprecated_2
+      - event: SubgraphMetadataUpdated(uint256 indexed subgraphID, bytes32
+          subgraphMetadata)
+        name: SubgraphMetadataUpdated_2
+      - event: SignalMinted(uint256 indexed subgraphID, address indexed curator, uint256
+          nSignalCreated, uint256 vSignalCreated, uint256 tokensDeposited)
+      - event: SignalBurned(uint256 indexed subgraphID, address indexed curator, uint256
+          nSignalBurnt, uint256 vSignalBurnt, uint256 tokensReceived)
+      - event: GRTWithdrawn(uint256 indexed subgraphID, address indexed curator, uint256
+          nSignalBurnt, uint256 withdrawnGRT)
+        name: GRTWithdrawn_2
+      - event: SubgraphUpgraded(uint256 indexed subgraphID, uint256 vSignalCreated,
+          uint256 tokensSignalled, bytes32 indexed subgraphDeploymentID)
+      - event: SubgraphVersionUpdated(uint256 indexed subgraphID, bytes32 indexed
+          subgraphDeploymentID, bytes32 versionMetadata)
+      - event: LegacySubgraphClaimed(address indexed graphAccount, uint256
+          subgraphNumber)
+      - event: SubgraphReceivedFromL1(uint256 indexed _l1SubgraphID, uint256 indexed
+          _l2SubgraphID, address indexed _owner, uint256 _tokens)
+      - event: SubgraphL2TransferFinalized(uint256 indexed _l2SubgraphID)
+      - event: CuratorBalanceReceived(uint256 indexed _l1SubgraphId, uint256 indexed
+          _l2SubgraphID, address indexed _l2Curator, uint256 _tokens)
+      - event: CuratorBalanceReturnedToBeneficiary(uint256 indexed _l1SubgraphID,
+          address indexed _l2Curator, uint256 _tokens)
+  - name: SubgraphNFT
+    abi_file_path: ./abis/SubgraphNFT.json
+    events:
+      - event: Transfer(address indexed from, address indexed to, uint256 indexed
+          tokenId)
+  - name: ServiceRegistry
+    abi_file_path: ./abis/ServiceRegistry.json
+    events:
+      - event: ServiceRegistered(address indexed indexer, string url, string geohash)
+      - event: ServiceUnregistered(address indexed indexer)
+  - name: StakingBundle
+    abi_file_path: ./abis/StakingBundle.json
+    events:
+      - event: TransferredDelegationReturnedToDelegator(address indexed indexer, address
+          indexed delegator, uint256 amount)
+      - event: DelegationParametersUpdated(address indexed indexer, uint32
+          indexingRewardCut, uint32 queryFeeCut, uint32 cooldownBlocks)
+      - event: StakeDeposited(address indexed indexer, uint256 tokens)
+      - event: StakeLocked(address indexed indexer, uint256 tokens, uint256 until)
+      - event: StakeWithdrawn(address indexed indexer, uint256 tokens)
+      - event: StakeSlashed(address indexed indexer, uint256 tokens, uint256 reward,
+          address beneficiary)
+      - event: StakeDelegated(address indexed indexer, address indexed delegator,
+          uint256 tokens, uint256 shares)
+      - event: StakeDelegatedLocked(address indexed indexer, address indexed delegator,
+          uint256 tokens, uint256 shares, uint256 until)
+      - event: StakeDelegatedWithdrawn(address indexed indexer, address indexed
+          delegator, uint256 tokens)
+      - event: AllocationCreated(address indexed indexer, bytes32 indexed
+          subgraphDeploymentID, uint256 epoch, uint256 tokens, address indexed
+          allocationID, bytes32 metadata)
+      - event: AllocationCollected(address indexed indexer, bytes32 indexed
+          subgraphDeploymentID, uint256 epoch, uint256 tokens, address indexed
+          allocationID, address from, uint256 curationFees, uint256 rebateFees)
+      - event: AllocationClosed(address indexed indexer, bytes32 indexed
+          subgraphDeploymentID, uint256 epoch, uint256 tokens, address indexed
+          allocationID, uint256 effectiveAllocation, address sender, bytes32
+          poi, bool isPublic)
+        name: AllocationClosed_1
+      - event: AllocationClosed(address indexed indexer, bytes32 indexed
+          subgraphDeploymentID, uint256 epoch, uint256 tokens, address indexed
+          allocationID, address sender, bytes32 poi, bool isPublic)
+        name: AllocationClosed_2
+      - event: RebateClaimed(address indexed indexer, bytes32 indexed
+          subgraphDeploymentID, address indexed allocationID, uint256 epoch,
+          uint256 forEpoch, uint256 tokens, uint256 unclaimedAllocationsCount,
+          uint256 delegationFees)
+      - event: RebateCollected(address assetHolder, address indexed indexer, bytes32
+          indexed subgraphDeploymentID, address indexed allocationID, uint256
+          epoch, uint256 tokens, uint256 protocolTax, uint256 curationFees,
+          uint256 queryFees, uint256 queryRebates, uint256 delegationRewards)
+      - event: SetOperator(address indexed indexer, address indexed operator, bool
+          allowed)
+      - event: SlasherUpdate(address indexed caller, address indexed slasher, bool
+          allowed)
+      - event: AssetHolderUpdate(address indexed caller, address indexed assetHolder,
+          bool allowed)
+      - event: ParameterUpdated(string param)
+      - event: HorizonStakeDeposited(address indexed serviceProvider, uint256 tokens)
+      - event: HorizonStakeLocked(address indexed serviceProvider, uint256 tokens,
+          uint256 until)
+      - event: HorizonStakeWithdrawn(address indexed serviceProvider, uint256 tokens)
+      - event: ProvisionCreated(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens, uint32 maxVerifierCut, uint64 thawingPeriod)
+      - event: ProvisionIncreased(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens)
+      - event: TokensDeprovisioned(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens)
+      - event: ProvisionParametersSet(address indexed serviceProvider, address indexed
+          verifier, uint32 maxVerifierCut, uint64 thawingPeriod)
+      - event: ProvisionParametersStaged(address indexed serviceProvider, address
+          indexed verifier, uint32 maxVerifierCut, uint64 thawingPeriod)
+      - event: ProvisionSlashed(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens)
+      - event: ProvisionThawed(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens)
+      - event: ThawRequestCreated(uint8 indexed requestType, address indexed
+          serviceProvider, address indexed verifier, address owner, uint256
+          shares, uint64 thawingUntil, bytes32 thawRequestId, uint256 nonce)
+      - event: ThawRequestFulfilled(uint8 indexed requestType, bytes32 indexed
+          thawRequestId, uint256 tokens, uint256 shares, uint64 thawingUntil,
+          bool valid)
+      - event: OperatorSet(address indexed serviceProvider, address indexed verifier,
+          address indexed operator, bool allowed)
+      - event: DelegationFeeCutSet(address indexed serviceProvider, address indexed
+          verifier, uint8 indexed paymentType, uint256 feeCut)
+      - event: TokensToDelegationPoolAdded(address indexed serviceProvider, address
+          indexed verifier, uint256 tokens)
+      - event: TokensDelegated(address indexed serviceProvider, address indexed
+          verifier, address indexed delegator, uint256 tokens, uint256 shares)
+      - event: DelegationSlashed(address indexed serviceProvider, address indexed
+          verifier, uint256 tokens)
+      - event: TokensUndelegated(address indexed serviceProvider, address indexed
+          verifier, address indexed delegator, uint256 tokens, uint256 shares)
+      - event: DelegatedTokensWithdrawn(address indexed serviceProvider, address indexed
+          verifier, address indexed delegator, uint256 tokens)
+      - event: MaxThawingPeriodSet(uint64 maxThawingPeriod)
+      - event: ThawingPeriodCleared()
+      - event: DelegationSlashingEnabled()
+      - event: AllowedLockedVerifierSet(address indexed verifier, bool allowed)
+  - name: SubgraphService
+    abi_file_path: ./abis/SubgraphService.json
+    events:
+      - event: ServiceProviderRegistered(address indexed serviceProvider, bytes data)
+      - event: RewardsDestinationSet(address indexed indexer, address indexed
+          rewardsDestination)
+      - event: AllocationCreated(address indexed indexer, address indexed allocationId,
+          bytes32 indexed subgraphDeploymentId, uint256 tokens, uint256
+          currentEpoch)
+      - event: AllocationResized(address indexed indexer, address indexed allocationId,
+          bytes32 indexed subgraphDeploymentId, uint256 newTokens, uint256
+          oldTokens)
+      - event: AllocationClosed(address indexed indexer, address indexed allocationId,
+          bytes32 indexed subgraphDeploymentId, uint256 tokens, bool
+          forceClosed)
+      - event: IndexingRewardsCollected(address indexed indexer, address indexed
+          allocationId, bytes32 indexed subgraphDeploymentId, uint256
+          tokensRewards, uint256 tokensIndexerRewards, uint256
+          tokensDelegationRewards, bytes32 poi, bytes poiMetadata, uint256
+          currentEpoch)
+      - event: QueryFeesCollected(address indexed serviceProvider, address indexed
+          payer, address indexed allocationId, bytes32 subgraphDeploymentId,
+          uint256 tokensCollected, uint256 tokensCurators)
+      - event: DelegationRatioSet(uint32 ratio)
+      - event: CurationCutSet(uint256 curationCut)
+      - event: MaxPOIStalenessSet(uint256 maxPOIStaleness)
+      - event: StakeToFeesRatioSet(uint256 ratio)
+      - event: ProvisionTokensRangeSet(uint256 min, uint256 max)
+      - event: VerifierCutRangeSet(uint32 min, uint32 max)
+      - event: ThawingPeriodRangeSet(uint64 min, uint64 max)
+  - name: GraphPayments
+    abi_file_path: ./abis/GraphPayments.json
+    events:
+      - event: GraphPaymentCollected(uint8 indexed paymentType, address indexed payer,
+          address receiver, address indexed dataService, uint256 tokens, uint256
+          tokensProtocol, uint256 tokensDataService, uint256
+          tokensDelegationPool, uint256 tokensReceiver)
+  - name: PaymentsEscrow
+    abi_file_path: ./abis/PaymentsEscrow.json
+    events:
+      - event: Deposit(address indexed payer, address indexed collector, address indexed
+          receiver, uint256 tokens)
+      - event: Withdraw(address indexed payer, address indexed collector, address
+          indexed receiver, uint256 tokens)
+      - event: Thaw(address indexed payer, address indexed collector, address indexed
+          receiver, uint256 tokens, uint256 thawEndTimestamp)
+      - event: CancelThaw(address indexed payer, address indexed collector, address
+          indexed receiver, uint256 tokensThawing, uint256 thawEndTimestamp)
+      - event: EscrowCollected(uint8 indexed paymentType, address indexed payer, address
+          indexed collector, address receiver, uint256 tokens, address
+          receiverDestination)
+  - name: GraphTallyCollector
+    abi_file_path: ./abis/GraphTallyCollector.json
+    events:
+      - event: SignerAuthorized(address indexed authorizer, address indexed signer)
+      - event: SignerThawing(address indexed authorizer, address indexed signer, uint256
+          thawEndTimestamp)
+      - event: SignerThawCanceled(address indexed authorizer, address indexed signer,
+          uint256 thawEndTimestamp)
+      - event: SignerRevoked(address indexed authorizer, address indexed signer)
+      - event: PaymentCollected(uint8 paymentType, bytes32 indexed collectionId, address
+          indexed payer, address receiver, address indexed dataService, uint256
+          tokens)
+  - name: HorizonDisputeManager
+    abi_file_path: ./abis/HorizonDisputeManager.json
+    events:
+      - event: QueryDisputeCreated(bytes32 indexed disputeId, address indexed indexer,
+          address indexed fisherman, uint256 tokens, bytes32
+          subgraphDeploymentId, bytes attestation, uint256 stakeSnapshot,
+          uint256 cancellableAt)
+      - event: IndexingDisputeCreated(bytes32 indexed disputeId, address indexed
+          indexer, address indexed fisherman, uint256 tokens, address
+          allocationId, bytes32 poi, uint256 blockNumber, uint256 stakeSnapshot,
+          uint256 cancellableAt)
+      - event: LegacyDisputeCreated(bytes32 indexed disputeId, address indexed indexer,
+          address indexed fisherman, address allocationId, uint256 tokensSlash,
+          uint256 tokensRewards)
+      - event: DisputeAccepted(bytes32 indexed disputeId, address indexed indexer,
+          address indexed fisherman, uint256 tokens)
+      - event: DisputeRejected(bytes32 indexed disputeId, address indexed indexer,
+          address indexed fisherman, uint256 tokens)
+      - event: DisputeCancelled(bytes32 indexed disputeId, address indexed indexer,
+          address indexed fisherman, uint256 tokens)
+      - event: DisputeDrawn(bytes32 indexed disputeId, address indexed indexer, address
+          indexed fisherman, uint256 tokens)
+      - event: DisputeLinked(bytes32 indexed disputeId1, bytes32 indexed disputeId2)
+      - event: ArbitratorSet(address indexed arbitrator)
+      - event: FishermanRewardCutSet(uint32 fishermanRewardCut)
+      - event: MaxSlashingCutSet(uint32 maxSlashingCut)
+      - event: DisputePeriodSet(uint64 disputePeriod)
+  - name: Curation
+    abi_file_path: ./abis/Curation.json
+    events:
+      - event: Signalled(address indexed curator, bytes32 indexed subgraphDeploymentID,
+          uint256 tokens, uint256 signal, uint256 curationTax)
+      - event: Burned(address indexed curator, bytes32 indexed subgraphDeploymentID,
+          uint256 tokens, uint256 signal)
+      - event: ParameterUpdated(string param)
+  - name: GraphToken
+    abi_file_path: ./abis/GraphToken.json
+    events:
+      - event: Transfer(address indexed from, address indexed to, uint256 value)
+      - event: Approval(address indexed owner, address indexed spender, uint256 value)
+  - name: EthereumDIDRegistry
+    abi_file_path: ./abis/EthereumDIDRegistry.json
+    events:
+      - event: DIDAttributeChanged(address indexed identity, bytes32 name, bytes value,
+          uint256 validTo, uint256 previousChange)
+  - name: EpochManager
+    abi_file_path: ./abis/EpochManager.json
+    events:
+      - event: EpochRun(uint256 indexed epoch, address caller)
+      - event: EpochLengthUpdate(uint256 indexed epoch, uint256 epochLength)
+  - name: RewardsManager
+    abi_file_path: ./abis/RewardsManager.json
+    events:
+      - event: RewardsAssigned(address indexed indexer, address indexed allocationID,
+          uint256 epoch, uint256 amount)
+      - event: HorizonRewardsAssigned(address indexed indexer, address indexed
+          allocationID, uint256 amount)
+      - event: RewardsDenylistUpdated(bytes32 indexed subgraphDeploymentID, uint256
+          sinceBlock)
+      - event: ParameterUpdated(string param)
+  - name: DisputeManager
+    abi_file_path: ./abis/DisputeManager.json
+    events:
+      - event: QueryDisputeCreated(bytes32 indexed disputeID, address indexed indexer,
+          address indexed fisherman, uint256 tokens, bytes32
+          subgraphDeploymentID, bytes attestation)
+      - event: IndexingDisputeCreated(bytes32 indexed disputeID, address indexed
+          indexer, address indexed fisherman, uint256 tokens, address
+          allocationID)
+      - event: DisputeAccepted(bytes32 indexed disputeID, address indexed indexer,
+          address indexed fisherman, uint256 tokens)
+      - event: DisputeRejected(bytes32 indexed disputeID, address indexed indexer,
+          address indexed fisherman, uint256 tokens)
+      - event: DisputeDrawn(bytes32 indexed disputeID, address indexed indexer, address
+          indexed fisherman, uint256 tokens)
+      - event: DisputeLinked(bytes32 indexed disputeID1, bytes32 indexed disputeID2)
+      - event: ParameterUpdated(string param)
+  - name: L2GraphTokenGateway
+    abi_file_path: ./abis/L2GraphTokenGateway.json
+    events:
+      - event: WithdrawalInitiated(address l1Token, address indexed from, address
+          indexed to, uint256 indexed l2ToL1Id, uint256 exitNum, uint256 amount)
+      - event: DepositFinalized(address indexed l1Token, address indexed from, address
+          indexed to, uint256 amount)
+  - name: ArbRetryableTx
+    abi_file_path: ./abis/ArbRetryableTx.json
+    events:
+      - event: RedeemScheduled(bytes32 indexed ticketId, bytes32 indexed retryTxHash,
+          uint64 indexed sequenceNum, uint64 donatedGas, address gasDonor,
+          uint256 maxRefund, uint256 submissionFeeRefund)
+chains:
+  - id: 42161
+    start_block: 42440000
+    contracts:
+      - name: Controller
+        address: "0x0a8491544221dd212964fbb96487467291b2C97e"
+        start_block: 42440000
+      - name: GNSBundle
+        address: "0xec9A7fb6CbC2E41926127929c2dcE6e9c5D33Bec"
+        start_block: 42440000
+      - name: SubgraphNFT
+        address: "0x3FbD54f0cc17b7aE649008dEEA12ed7D2622B23f"
+        start_block: 42440000
+      - name: ServiceRegistry
+        address: "0x072884c745c0A23144753335776c99BE22588f8A"
+        start_block: 42440000
+      - name: StakingBundle
+        address: "0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03"
+        start_block: 42440000
+      - name: SubgraphService
+        address: "0xb2Bb92d0DE618878E438b55D5846cfecD9301105"
+        start_block: 42440000
+      - name: GraphPayments
+        address: "0x7Aae8ae011927BC36Cb4d0d3e81f2E6E30daE06D"
+        start_block: 42440000
+      - name: PaymentsEscrow
+        address: "0xf6Fcc27aAf1fcD8B254498c9794451d82afC673E"
+        start_block: 42440000
+      - name: GraphTallyCollector
+        address: "0x8f69F5C07477Ac46FBc491B1E6D91E2bb0111A9e"
+        start_block: 42440000
+      - name: HorizonDisputeManager
+        address: "0x2FE023a575449AcB698648eD21276293Fa176f96"
+        start_block: 42440000
+      - name: Curation
+        address: "0x22d78fb4bc72e191C765807f8891B5e1785C8014"
+        start_block: 42440000
+      - name: GraphToken
+        address: "0x9623063377AD1B27544C965cCd7342f7EA7e88C7"
+        start_block: 42440000
+      - name: EthereumDIDRegistry
+        address: "0xa9AEb1c6f14f4244547B9a0946C485DA99047638"
+        start_block: 42440000
+      - name: EpochManager
+        address: "0x5A843145c43d328B9bB7a4401d94918f131bB281"
+        start_block: 42440000
+      - name: RewardsManager
+        address: "0x971B9d3d0Ae3ECa029CAB5eA1fB0F72c85e6a525"
+        start_block: 42440000
+      - name: DisputeManager
+        address: "0x0Ab2B043138352413Bb02e67E626a70320E3BD46"
+        start_block: 42440000
+      - name: L2GraphTokenGateway
+        address: "0x65E1a5e8946e7E87d9774f5288f41c30a99fD302"
+        start_block: 42449749
+      - name: ArbRetryableTx
+        address: "0x000000000000000000000000000000000000006E"
+        start_block: 42449749

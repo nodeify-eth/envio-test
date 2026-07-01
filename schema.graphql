@@ -1,0 +1,12 @@
+type GraphNetworkRawEvent {
+  id: ID!
+  chainId: Int!
+  contract: String!
+  eventName: String!
+  srcAddress: String!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: String!
+  logIndex: Int!
+  params: String!
+}

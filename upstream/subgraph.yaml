@@ -1,0 +1,994 @@
+specVersion: 1.2.0
+description: Core Graph Network subgraph (arbitrum-one NO PRUNING)
+repository: https://github.com/graphprotocol/graph-network-subgraph
+schema:
+  file: ./schema.graphql
+features:
+  - fullTextSearch
+dataSources:
+  - kind: ethereum/contract
+    name: Controller
+    network: arbitrum-one
+    source:
+      address: "0x0a8491544221dd212964fbb96487467291b2C97e"
+      abi: Controller
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/controller.ts
+      entities:
+        - Indexer
+      abis:
+        - name: Controller
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/Controller.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: SetContractProxy(indexed bytes32,address)
+          handler: handleSetContractProxy
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: NewOwnership(indexed address,indexed address)
+          handler: handleNewOwnership
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: PartialPauseChanged(bool)
+          handler: handlePartialPauseChanged
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: PauseChanged(bool)
+          handler: handlePauseChanged
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: NewPauseGuardian(indexed address,indexed address)
+          handler: handleNewPauseGuardian
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: GNS
+    network: arbitrum-one
+    source:
+      address: "0xec9A7fb6CbC2E41926127929c2dcE6e9c5D33Bec"
+      abi: GNSStitched
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/gns.ts
+      entities:
+        - Subgraph
+        - SubgraphVersion
+        - SubgraphDeployment
+        - GraphAccount
+        - NameSignal
+      abis:
+        - name: GNSStitched
+          file: ./abis/GNSStitched.json
+        - name: ENS
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/IENS.json
+        - name: ENSPublicResolver
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/IPublicResolver.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+          # v1
+        - event: SubgraphPublished(indexed address,indexed uint256,indexed bytes32,bytes32)
+          handler: handleSubgraphPublished
+        - event: SubgraphDeprecated(indexed address,indexed uint256)
+          handler: handleSubgraphDeprecated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: SetDefaultName(indexed address,uint256,bytes32,string)
+          handler: handleSetDefaultName
+          calls:
+            ENS.owner: ENS[0x0000000000000000000000000000000000000000].owner(event.params.nameIdentifier)
+        - event: SubgraphMetadataUpdated(indexed address,indexed uint256,bytes32)
+          handler: handleSubgraphMetadataUpdated
+        - event: NameSignalEnabled(indexed address,indexed uint256,indexed bytes32,uint32)
+          handler: handleNameSignalEnabled
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: NameSignalUpgrade(indexed address,indexed uint256,uint256,uint256,indexed bytes32)
+          handler: handleNameSignalUpgrade
+        - event: NSignalMinted(indexed address,indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleNSignalMinted
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: NSignalBurned(indexed address,indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleNSignalBurned
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: NameSignalDisabled(indexed address,indexed uint256,uint256)
+          handler: handleNameSignalDisabled
+        - event: GRTWithdrawn(indexed address,indexed uint256,indexed address,uint256,uint256)
+          handler: handleGRTWithdrawn
+        - event: ParameterUpdated(string)
+          handler: handleParameterUpdated
+          # v2
+        - event: SubgraphPublished(indexed uint256,indexed bytes32,uint32)
+          handler: handleSubgraphPublishedV2
+        - event: SubgraphDeprecated(indexed uint256,uint256)
+          handler: handleSubgraphDeprecatedV2
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: SubgraphMetadataUpdated(indexed uint256,bytes32)
+          handler: handleSubgraphMetadataUpdatedV2
+        - event: SignalMinted(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleNSignalMintedV2
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: SignalBurned(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleNSignalBurnedV2
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: GRTWithdrawn(indexed uint256,indexed address,uint256,uint256)
+          handler: handleGRTWithdrawnV2
+        - event: SubgraphUpgraded(indexed uint256,uint256,uint256,indexed bytes32)
+          handler: handleSubgraphUpgraded
+        - event: SubgraphVersionUpdated(indexed uint256,indexed bytes32,bytes32)
+          handler: handleSubgraphVersionUpdated
+        - event: LegacySubgraphClaimed(indexed address,uint256)
+          handler: handleLegacySubgraphClaimed
+  - kind: ethereum/contract
+    name: L2GNS
+    network: arbitrum-one
+    source:
+      address: "0xec9A7fb6CbC2E41926127929c2dcE6e9c5D33Bec"
+      abi: L2GNS
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/l2gns.ts
+      entities:
+        - Subgraph
+        - SubgraphVersion
+        - SubgraphDeployment
+        - GraphAccount
+        - NameSignal
+      abis:
+        - name: L2GNS
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/L2GNS.json
+      eventHandlers:
+        - event: SubgraphReceivedFromL1(indexed uint256,indexed uint256,indexed address,uint256)
+          handler: handleSubgraphReceivedFromL1
+        - event: SubgraphL2TransferFinalized(indexed uint256)
+          handler: handleSubgraphL2TransferFinalized
+        - event: CuratorBalanceReceived(indexed uint256,indexed uint256,indexed address,uint256)
+          handler: handleCuratorBalanceReceived
+        - event: CuratorBalanceReturnedToBeneficiary(indexed uint256,indexed address,uint256)
+          handler: handleCuratorBalanceReturnedToBeneficiary
+  - kind: ethereum/contract
+    name: SubgraphNFT
+    network: arbitrum-one
+    source:
+      address: "0x3FbD54f0cc17b7aE649008dEEA12ed7D2622B23f"
+      abi: SubgraphNFT
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/gns.ts
+      entities:
+        - Subgraph
+        - SubgraphVersion
+        - SubgraphDeployment
+        - GraphAccount
+        - NameSignal
+      abis:
+        - name: SubgraphNFT
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/SubgraphNFT.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+  - kind: ethereum/contract
+    name: ServiceRegistry
+    network: arbitrum-one
+    source:
+      address: "0x072884c745c0A23144753335776c99BE22588f8A"
+      abi: ServiceRegistry
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/serviceRegistry.ts
+      entities:
+        - Indexer
+      abis:
+        - name: ServiceRegistry
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/ServiceRegistry.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: ServiceRegistered(indexed address,string,string)
+          handler: handleServiceRegistered
+        - event: ServiceUnregistered(indexed address)
+          handler: handleServiceUnregistered
+
+
+  - kind: ethereum/contract
+    name: L2Staking
+    network: arbitrum-one
+    source:
+      address: "0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03"
+      abi: L2Staking
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/l2staking.ts
+      entities:
+        - Indexer
+        - Allocation
+        - GraphNetwork
+        - SubgraphDeployment
+        - GraphAccount
+        - Delegator
+        - DelegatedStake
+        - Epoch
+      abis:
+        - name: L2Staking
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/L2Staking.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: TransferredDelegationReturnedToDelegator(indexed address,indexed address,uint256)
+          handler: handleTransferredDelegationReturnedToDelegator
+  - kind: ethereum/contract
+    name: Staking
+    network: arbitrum-one
+    source:
+      address: "0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03"
+      abi: Staking
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/staking.ts
+      entities:
+        - Indexer
+        - Allocation
+        - GraphNetwork
+        - SubgraphDeployment
+        - GraphAccount
+        - Delegator
+        - DelegatedStake
+        - Epoch
+      abis:
+        - name: Staking
+          file: ./abis/IStakingStitched.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: DelegationParametersUpdated(indexed address,uint32,uint32,uint32)
+          handler: handleDelegationParametersUpdated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeDeposited(indexed address,uint256)
+          handler: handleStakeDeposited
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeLocked(indexed address,uint256,uint256)
+          handler: handleStakeLocked
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeWithdrawn(indexed address,uint256)
+          handler: handleStakeWithdrawn
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeSlashed(indexed address,uint256,uint256,address)
+          handler: handleStakeSlashed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeDelegated(indexed address,indexed address,uint256,uint256)
+          handler: handleStakeDelegated
+        - event: StakeDelegatedLocked(indexed address,indexed address,uint256,uint256,uint256)
+          handler: handleStakeDelegatedLocked
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: StakeDelegatedWithdrawn(indexed address,indexed address,uint256)
+          handler: handleStakeDelegatedWithdrawn
+        - event: AllocationCreated(indexed address,indexed bytes32,uint256,uint256,indexed address,bytes32)
+          handler: handleAllocationCreated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AllocationCollected(indexed address,indexed bytes32,uint256,uint256,indexed address,address,uint256,uint256)
+          handler: handleAllocationCollected
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AllocationClosed(indexed address,indexed bytes32,uint256,uint256,indexed address,uint256,address,bytes32,bool)
+          handler: handleAllocationClosedCobbDouglas
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AllocationClosed(indexed address,indexed bytes32,uint256,uint256,indexed address,address,bytes32,bool)
+          handler: handleAllocationClosed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: RebateClaimed(indexed address,indexed bytes32,indexed address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebateClaimed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: RebateCollected(address,indexed address,indexed bytes32,indexed address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebateCollected
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: SetOperator(indexed address,indexed address,bool)
+          handler: handleSetOperator
+        - event: SlasherUpdate(indexed address,indexed address,bool)
+          handler: handleSlasherUpdate
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AssetHolderUpdate(indexed address,indexed address,bool)
+          handler: handleAssetHolderUpdate
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        # - event: ImplementationUpdated(address,address)
+        #   handler: handleImplementationUpdated
+  - kind: ethereum/contract
+    name: StakingExtension
+    network: arbitrum-one
+    source:
+      address: "0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03"
+      abi: StakingExtension
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/staking.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: StakingExtension
+          file: ./abis/StakingExtensionStitched.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: ParameterUpdated(string)
+          handler: handleParameterUpdated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: HorizonStaking
+    network: arbitrum-one
+    source:
+      address: "0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03"
+      abi: HorizonStaking
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/horizonStaking.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: HorizonStaking
+          file: ./abis/HorizonStaking.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: HorizonStakeDeposited(indexed address,uint256)
+          handler: handleHorizonStakeDeposited
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: HorizonStakeLocked(indexed address,uint256,uint256)
+          handler: handleHorizonStakeLocked
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: HorizonStakeWithdrawn(indexed address,uint256)
+          handler: handleHorizonStakeWithdrawn
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ProvisionCreated(indexed address,indexed address,uint256,uint32,uint64)
+          handler: handleProvisionCreated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ProvisionIncreased(indexed address,indexed address,uint256)
+          handler: handleProvisionIncreased
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: TokensDeprovisioned(indexed address,indexed address,uint256)
+          handler: handleTokensDeprovisioned
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ProvisionParametersSet(indexed address,indexed address,uint32,uint64)
+          handler: handleProvisionParametersSet
+        - event: ProvisionParametersStaged(indexed address,indexed address,uint32,uint64)
+          handler: handleProvisionParametersStaged
+        - event: ProvisionSlashed(indexed address,indexed address,uint256)
+          handler: handleProvisionSlashed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ProvisionThawed(indexed address,indexed address,uint256)
+          handler: handleProvisionThawed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ThawRequestCreated(indexed uint8,indexed address,indexed address,address,uint256,uint64,bytes32,uint256)
+          handler: handleThawRequestCreated
+        - event: ThawRequestFulfilled(indexed uint8,indexed bytes32,uint256,uint256,uint64,bool)
+          handler: handleThawRequestFulfilled
+        - event: OperatorSet(indexed address,indexed address,indexed address,bool)
+          handler: handleOperatorSet
+        - event: DelegationFeeCutSet(indexed address,indexed address,indexed uint8,uint256)
+          handler: handleDelegationFeeCutSet
+        - event: TokensToDelegationPoolAdded(indexed address,indexed address,uint256)
+          handler: handleTokensToDelegationPoolAdded
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: TokensDelegated(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTokensDelegated
+        - event: DelegationSlashed(indexed address,indexed address,uint256)
+          handler: handleDelegationSlashed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: TokensUndelegated(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTokensUndelegated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: DelegatedTokensWithdrawn(indexed address,indexed address,indexed address,uint256)
+          handler: handleDelegatedTokensWithdrawn
+        - event: MaxThawingPeriodSet(uint64)
+          handler: handleMaxThawingPeriodSet
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: ThawingPeriodCleared()
+          handler: handleThawingPeriodCleared
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: DelegationSlashingEnabled()
+          handler: handleDelegationSlashingEnabled
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AllowedLockedVerifierSet(indexed address,bool)
+          handler: handleAllowedLockedVerifierSet
+  - kind: ethereum/contract
+    name: SubgraphService
+    network: arbitrum-one
+    source:
+      address: "0xb2Bb92d0DE618878E438b55D5846cfecD9301105"
+      abi: SubgraphService
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/subgraphService.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: SubgraphService
+          file: ./abis/SubgraphService.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: ServiceProviderRegistered(indexed address,bytes)
+          handler: handleServiceProviderRegistered
+        - event: RewardsDestinationSet(indexed address,indexed address)
+          handler: handleRewardsDestinationSet
+        - event: AllocationCreated(indexed address,indexed address,indexed bytes32,uint256,uint256)
+          handler: handleAllocationCreated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: AllocationResized(indexed address,indexed address,indexed bytes32,uint256,uint256)
+          handler: handleAllocationResized
+        - event: AllocationClosed(indexed address,indexed address,indexed bytes32,uint256,bool)
+          handler: handleAllocationClosed
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: IndexingRewardsCollected(indexed address,indexed address,indexed bytes32,uint256,uint256,uint256,bytes32,bytes,uint256)
+          handler: handleIndexingRewardsCollected
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: QueryFeesCollected(indexed address,indexed address,indexed address,bytes32,uint256,uint256)
+          handler: handleQueryFeesCollected
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: DelegationRatioSet(uint32)
+          handler: handleDelegationRatioSet
+        - event: CurationCutSet(uint256)
+          handler: handleCurationCutSet
+        - event: MaxPOIStalenessSet(uint256)
+          handler: handleMaxPOIStalenessSet
+        - event: StakeToFeesRatioSet(uint256)
+          handler: handleStakeToFeesRatioSet
+        - event: ProvisionTokensRangeSet(uint256,uint256)
+          handler: handleProvisionTokensRangeSet
+        - event: VerifierCutRangeSet(uint32,uint32)
+          handler: handleVerifierCutRangeSet
+        - event: ThawingPeriodRangeSet(uint64,uint64)
+          handler: handleThawingPeriodRangeSet
+  - kind: ethereum/contract
+    name: GraphPayments
+    network: arbitrum-one
+    source:
+      address: "0x7Aae8ae011927BC36Cb4d0d3e81f2E6E30daE06D"
+      abi: GraphPayments
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/graphPayments.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: GraphPayments
+          file: ./abis/GraphPayments.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: GraphPaymentCollected(indexed uint8,indexed address,address,indexed address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleGraphPaymentCollected
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: PaymentsEscrow
+    network: arbitrum-one
+    source:
+      address: "0xf6Fcc27aAf1fcD8B254498c9794451d82afC673E"
+      abi: PaymentsEscrow
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/paymentsEscrow.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: PaymentsEscrow
+          file: ./abis/PaymentsEscrow.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,indexed address,uint256)
+          handler: handleWithdraw
+        - event: Thaw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleThaw
+        - event: CancelThaw(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleCancelThaw
+        - event: EscrowCollected(indexed uint8,indexed address,indexed address,address,uint256,address)
+          handler: handleEscrowCollected
+  - kind: ethereum/contract
+    name: GraphTallyCollector
+    network: arbitrum-one
+    source:
+      address: "0x8f69F5C07477Ac46FBc491B1E6D91E2bb0111A9e"
+      abi: GraphTallyCollector
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/graphTallyCollector.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: GraphTallyCollector
+          file: ./abis/GraphTallyCollector.json
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+      eventHandlers:
+        - event: SignerAuthorized(indexed address,indexed address)
+          handler: handleSignerAuthorized
+        - event: SignerThawing(indexed address,indexed address,uint256)
+          handler: handleSignerThawing
+        - event: SignerThawCanceled(indexed address,indexed address,uint256)
+          handler: handleSignerThawCanceled
+        - event: SignerRevoked(indexed address,indexed address)
+          handler: handleSignerRevoked
+        - event: PaymentCollected(uint8,indexed bytes32,indexed address,address,indexed address,uint256)
+          handler: handlePaymentCollected
+  - kind: ethereum/contract
+    name: HorizonDisputeManager
+    network: arbitrum-one
+    source:
+      address: "0x2FE023a575449AcB698648eD21276293Fa176f96"
+      abi: HorizonDisputeManager
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/horizonDisputeManager.ts
+      entities:
+        - Dispute
+        - GraphNetwork
+        - GraphAccount
+        - SubgraphDeployment
+      abis:
+        - name: HorizonDisputeManager
+          file: ./abis/HorizonDisputeManager.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: QueryDisputeCreated(indexed bytes32,indexed address,indexed address,uint256,bytes32,bytes,uint256,uint256)
+          handler: handleQueryDisputeCreated
+        - event: IndexingDisputeCreated(indexed bytes32,indexed address,indexed address,uint256,address,bytes32,uint256,uint256,uint256)
+          handler: handleIndexingDisputeCreated
+        - event: LegacyDisputeCreated(indexed bytes32,indexed address,indexed address,address,uint256,uint256)
+          handler: handleLegacyDisputeCreated
+        - event: DisputeAccepted(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeAccepted
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: DisputeRejected(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeRejected
+        - event: DisputeCancelled(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeCancelled
+        - event: DisputeDrawn(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeDrawn
+        - event: DisputeLinked(indexed bytes32,indexed bytes32)
+          handler: handleDisputeLinked
+        - event: ArbitratorSet(indexed address)
+          handler: handleArbitratorSet
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: FishermanRewardCutSet(uint32)
+          handler: handleFishermanRewardCutSet
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: MaxSlashingCutSet(uint32)
+          handler: handleMaxSlashingCutSet
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: DisputePeriodSet(uint64)
+          handler: handleDisputePeriodSet
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: Curation
+    network: arbitrum-one
+    source:
+      address: "0x22d78fb4bc72e191C765807f8891B5e1785C8014"
+      abi: Curation
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/curation.ts
+      entities:
+        - Curator
+        - GraphNetwork
+        - Signal
+        - SubgraphDeployment
+        - Epoch
+      abis:
+        - name: Curation
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/Curation.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: Signalled(indexed address,indexed bytes32,uint256,uint256,uint256)
+          handler: handleSignalled
+        - event: Burned(indexed address,indexed bytes32,uint256,uint256)
+          handler: handleBurned
+        # - event: Collected(indexed bytes32,uint256) NOT used - all can be handled by handleAllocationClosed
+        #   handler: handleCollected
+        - event: ParameterUpdated(string)
+          handler: handleParameterUpdated
+        # - event: ImplementationUpdated(address,address)
+        #   handler: handleImplementationUpdated
+  - kind: ethereum/contract
+    name: GraphToken
+    network: arbitrum-one
+    source:
+      address: "0x9623063377AD1B27544C965cCd7342f7EA7e88C7"
+      abi: GraphToken
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/graphToken.ts
+      entities:
+        - GraphAccount
+        - GraphNetwork
+      abis:
+        - name: GraphToken
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/GraphToken.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: EthereumDIDRegistry
+    network: arbitrum-one
+    source:
+      address: "0xa9AEb1c6f14f4244547B9a0946C485DA99047638"
+      abi: EthereumDIDRegistry
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ethereumDIDRegistry.ts
+      entities:
+        - GraphAccount
+      abis:
+        - name: EthereumDIDRegistry
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EthereumDIDRegistry.json
+      eventHandlers:
+        - event: DIDAttributeChanged(indexed address,bytes32,bytes,uint256,uint256)
+          handler: handleDIDAttributeChanged
+  - kind: ethereum/contract
+    name: EpochManager
+    network: arbitrum-one
+    source:
+      address: "0x5A843145c43d328B9bB7a4401d94918f131bB281"
+      abi: EpochManager
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/epochManager.ts
+      entities:
+        - Epoch
+        - GraphNetwork
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: EpochRun(indexed uint256,address)
+          handler: handleEpochRun
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: EpochLengthUpdate(indexed uint256,uint256)
+          handler: handleEpochLengthUpdate
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        # - event: ImplementationUpdated(address,address)
+        #   handler: handleImplementationUpdated
+  - kind: ethereum/contract
+    name: RewardsManager
+    network: arbitrum-one
+    source:
+      address: "0x971B9d3d0Ae3ECa029CAB5eA1fB0F72c85e6a525"
+      abi: RewardsManagerStitched
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/rewardsManager.ts
+      entities:
+        - Indexer
+        - Allocation
+        - GraphNetwork
+        - Epoch
+        - SubgraphDeployment
+      abis:
+        - name: RewardsManagerStitched
+          file: ./abis/RewardsManagerStitched.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: RewardsAssigned(indexed address,indexed address,uint256,uint256)
+          handler: handleRewardsAssigned
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: HorizonRewardsAssigned(indexed address,indexed address,uint256)
+          handler: handleHorizonRewardsAssigned
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+        - event: RewardsDenylistUpdated(indexed bytes32,uint256)
+          handler: handleRewardsDenyListUpdated
+        # - event: ImplementationUpdated(address,address)
+        #   handler: handleImplementationUpdated
+        - event: ParameterUpdated(string)
+          handler: handleParameterUpdated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: DisputeManager
+    network: arbitrum-one
+    source:
+      address: "0x0Ab2B043138352413Bb02e67E626a70320E3BD46"
+      abi: DisputeManager
+      startBlock: 42440000
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/disputeManager.ts
+      entities:
+        - TODO
+      abis:
+        - name: DisputeManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/DisputeManager.json
+        - name: DisputeManagerStitched
+          file: ./abis/DisputeManagerStitched.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: QueryDisputeCreated(indexed bytes32,indexed address,indexed address,uint256,bytes32,bytes)
+          handler: handleQueryDisputeCreated
+        - event: IndexingDisputeCreated(indexed bytes32,indexed address,indexed address,uint256,address)
+          handler: handleIndexingDisputeCreated
+        - event: DisputeAccepted(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeAccepted
+        - event: DisputeRejected(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeRejected
+        - event: DisputeDrawn(indexed bytes32,indexed address,indexed address,uint256)
+          handler: handleDisputeDrawn
+        - event: DisputeLinked(indexed bytes32,indexed bytes32)
+          handler: handleDisputeLinked
+        - event: ParameterUpdated(string)
+          handler: handleParameterUpdated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+  - kind: ethereum/contract
+    name: L2GraphTokenGateway
+    network: arbitrum-one
+    source:
+      address: "0x65E1a5e8946e7E87d9774f5288f41c30a99fD302"
+      abi: L2GraphTokenGateway
+      startBlock: 42449749
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/l2Gateway.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: L2GraphTokenGateway
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/L2GraphTokenGateway.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: WithdrawalInitiated(address,indexed address,indexed address,indexed uint256,uint256,uint256)
+          handler: handleWithdrawalInitiated
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+          receipt: true
+        - event: DepositFinalized(indexed address,indexed address,indexed address,uint256)
+          handler: handleDepositFinalized
+          calls:
+            EpochManager.blockNum: EpochManager[0x5A843145c43d328B9bB7a4401d94918f131bB281].blockNum()
+          receipt: true
+  - kind: ethereum/contract
+    name: ArbRetryableTx
+    network: arbitrum-one
+    source:
+      abi: ArbRetryableTx
+      address: "0x000000000000000000000000000000000000006E"
+      startBlock: 42449749
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/arbRetryableTx.ts
+      entities:
+        - GraphNetwork
+      abis:
+        - name: ArbRetryableTx
+          file: ./abis/ArbRetryableTx.json
+      eventHandlers:
+        - event: RedeemScheduled(indexed bytes32,indexed bytes32,indexed uint64,uint64,address,uint256,uint256)
+          handler: handleRedeemScheduled
+templates:
+  - kind: ethereum/contract
+    name: GraphTokenLockWallet
+    network: arbitrum-one
+    source:
+      abi: GraphTokenLockWallet
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/tokenLockWallets/tokenLockWallet.ts
+      entities:
+        - TokenLockWallet
+      abis:
+        - name: GraphTokenLockWallet
+          file: ./abis/GraphTokenLockWallet.json
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+      eventHandlers:
+        - event: TokensReleased(indexed address,uint256)
+          handler: handleTokensReleased
+        - event: TokensWithdrawn(indexed address,uint256)
+          handler: handleTokensWithdrawn
+        - event: TokensRevoked(indexed address,uint256)
+          handler: handleTokensRevoked
+        - event: ManagerUpdated(indexed address,indexed address)
+          handler: handleManagerUpdated
+        - event: ApproveTokenDestinations()
+          handler: handleApproveTokenDestinations
+        - event: RevokeTokenDestinations()
+          handler: handleRevokeTokenDestinations
+  - name: SubgraphDeploymentManifest
+    kind: file/ipfs
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ipfs.ts
+      handler: handleSubgraphDeploymentManifest
+      entities:
+        - SubgraphDeploymentManifest
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+  - name: SubgraphDeploymentSchema
+    kind: file/ipfs
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ipfs.ts
+      handler: handleSubgraphDeploymentSchema
+      entities:
+        - SubgraphDeploymentSchema
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+  - name: SubgraphMetadata
+    kind: file/ipfs
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ipfs.ts
+      handler: handleSubgraphMetadata
+      entities:
+        - SubgraphMeta
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+  - name: SubgraphVersionMetadata
+    kind: file/ipfs
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ipfs.ts
+      handler: handleSubgraphVersionMetadata
+      entities:
+        - SubgraphVersionMeta
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
+  - name: GraphAccountMetadata
+    kind: file/ipfs
+    mapping:
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      file: ./src/mappings/ipfs.ts
+      handler: handleGraphAccountMetadata
+      entities:
+        - GraphAccountMeta
+      abis:
+        - name: EpochManager
+          file: ./node_modules/@graphprotocol/contracts/dist/abis/EpochManager.json
